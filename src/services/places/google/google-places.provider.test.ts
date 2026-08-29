@@ -1,0 +1,101 @@
+import { describe, expect, it, vi } from "vitest";
+
+import { GooglePlacesProvider } from "@/services/places/google/google-places.provider";
+
+describe("GooglePlacesProvider", () => {
+  it("uses explicit masks, no-store, exact local filters, and Google order", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          places: [
+            {
+              id: "first",
+              displayName: { text: "Below exact rating" },
+              location: { latitude: 10.775, longitude: 106.7 },
+              rating: 4.2,
+              userRatingCount: 500,
+              currentOpeningHours: { openNow: true },
+            },
+            {
+              id: "second",
+              displayName: { text: "Valid first" },
+              location: { latitude: 10.776, longitude: 106.7 },
+              rating: 4.4,
+              userRatingCount: 120,
+              currentOpeningHours: { openNow: true },
+            },
+            {
+              id: "third",
+              displayName: { text: "Valid second" },
+              location: { latitude: 10.777, longitude: 106.7 },
+              rating: 4.8,
+              userRatingCount: 1000,
+              currentOpeningHours: { openNow: true },
+            },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    const provider = new GooglePlacesProvider("a-secure-test-key-that-is-long", fetchMock);
+
+    const result = await provider.searchPlaces({
+      center: { latitude: 10.775, longitude: 106.7 },
+      radiusMeters: 3000,
+      textQuery: "nhà hàng Nhật",
+      filters: { minRating: 4.3, minReviewCount: 100, openNow: true },
+    });
+
+    expect(result.places.map((place) => place.id)).toEqual(["second", "third"]);
+    const [, init] = fetchMock.mock.calls[0] ?? [];
+    const headers = init?.headers as Record<string, string>;
+    expect(init?.cache).toBe("no-store");
+    expect(headers["X-Goog-FieldMask"]).not.toContain("*");
+    expect(headers["X-Goog-FieldMask"]).toContain(
+      "places.currentOpeningHours.openNow",
+    );
+    expect(headers["X-Goog-FieldMask"]).not.toContain("nextPageToken");
+    expect(JSON.parse(String(init?.body)).minRating).toBe(4);
+  });
+
+  it("requests expensive detail fields only when detail UI asks for them", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        id: "ChIJ-test",
+        displayName: { text: "Quán chi tiết" },
+        location: { latitude: 10.775, longitude: 106.7 },
+        reviews: [
+          {
+            rating: 5,
+            text: { text: "Rất ngon" },
+            authorAttribution: { displayName: "Linh" },
+          },
+        ],
+        dineIn: true,
+        servesCocktails: true,
+        parkingOptions: { paidParkingLot: true },
+      }),
+    );
+    const provider = new GooglePlacesProvider(
+      "a-secure-test-key-that-is-long",
+      fetchMock,
+    );
+
+    const result = await provider.getPlaceDetails("ChIJ-test", {
+      includeReviews: true,
+      includeAttributes: true,
+    });
+
+    expect(result.reviews[0]?.text?.text).toBe("Rất ngon");
+    expect(result.features.dineIn).toBe(true);
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+    const headers = init?.headers as Record<string, string>;
+    expect(String(url)).toContain("/places/ChIJ-test");
+    expect(init?.cache).toBe("no-store");
+    expect(headers["X-Goog-FieldMask"]).toContain("reviews");
+    expect(headers["X-Goog-FieldMask"]).toContain("dineIn");
+    expect(headers["X-Goog-FieldMask"]).toContain("servesCocktails");
+    expect(headers["X-Goog-FieldMask"]).toContain("parkingOptions");
+    expect(headers["X-Goog-FieldMask"]).not.toContain("*");
+  });
+});

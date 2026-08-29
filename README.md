@@ -1,1 +1,80 @@
-# Food_date
+# Đi Đâu Ăn Gì?
+
+Mobile-first PWA giúp cặp đôi và nhóm bạn quyết định ăn gì, uống gì và đi đâu mà không phải lướt vô tận.
+
+Repository hiện hoàn thành **STEP 1 → STEP 11**:
+
+- kiến trúc sản phẩm, hệ thống, dữ liệu, API, PWA và MenuResolver;
+- Next.js 16 App Router, React 19, TypeScript strict, Tailwind CSS v4 và shadcn/ui foundation;
+- Supabase SSR/Auth, Google OAuth entry point và guest-safe shell;
+- manifest, service worker, offline shell, install UX và icon PWA;
+- `PlaceProvider` abstraction cùng `GooglePlacesProvider` dùng Places API (New), explicit Field Mask và `no-store`;
+- Food Preference Wizard 5 bước với geolocation theo thao tác, chọn khu vực thủ công và search draft đã validate;
+- `POST /api/search` với Zod validation, cost-aware Field Mask, Google-order filtering, `no-store`, timeout và rate limiting;
+- Restaurant Cards mobile-first với Google attribution, photo author/source attribution, Maps deep link và lựa chọn quán cục bộ;
+- Place Photos tải on-demand khi card vào viewport qua endpoint server-only `no-store`, không qua Next Image optimizer;
+- empty-state chỉ nới filter sau thao tác rõ ràng của người dùng và giữ nguyên budget/diet constraints;
+- Restaurant Detail tải Place Details on-demand với opening hours, reviews, price range, website và attributes;
+- detail actions gồm chỉ đường, mở Google Maps, website, Web Share và chọn quán; khoảng cách chỉ tính sau thao tác định vị riêng;
+- MenuResolver DB-first với provider abstraction, provenance/freshness, schema.org/static HTML parser và explicit fallback;
+- official website crawler chỉ chạy sau thao tác người dùng, tuân thủ robots.txt, chặn SSRF/DNS rebinding và giới hạn timeout/size/concurrency;
+- trang menu mobile-first có search món, section tabs, nguồn dữ liệu, ngày cập nhật và price fallback;
+- migration PostgreSQL có indexes, constraints và RLS.
+
+## Chạy local
+
+Yêu cầu Node.js 20.18.1+ và npm.
+
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Mở [http://localhost:3000](http://localhost:3000). App shell và guest mode chạy được khi chưa điền Supabase/Google credentials. Các tích hợp tương ứng chỉ được bật khi có cấu hình hợp lệ.
+
+## Kiểm tra chất lượng
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```
+
+## Supabase
+
+1. Tạo project Supabase.
+2. Chạy migration [202608290001_initial_schema.sql](supabase/migrations/202608290001_initial_schema.sql).
+3. Điền `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` và server-only `SUPABASE_SERVICE_ROLE_KEY`.
+4. Bật Google provider trong Supabase Auth và thêm callback URL do Supabase cung cấp vào Google OAuth client.
+5. Đặt Site URL và redirect URL cho local, preview và production trong Supabase Auth.
+
+`SUPABASE_SERVICE_ROLE_KEY` chỉ dành cho các API server cần hỗ trợ guest session; tuyệt đối không import admin client vào Client Component.
+
+## Google Places
+
+1. Tạo Google Cloud project có billing và bật **Places API (New)**.
+2. Tạo key riêng cho server, giới hạn API về Places API (New), thêm IP restriction nếu hạ tầng có egress IP ổn định.
+3. Điền `GOOGLE_MAPS_API_KEY` vào `.env.local` và Vercel Environment Variables.
+4. Nếu sau này dùng Maps JavaScript API, tạo một browser key khác, giới hạn HTTPS referrer và chỉ cho Maps JavaScript API.
+
+Không đưa `GOOGLE_MAPS_API_KEY` vào biến `NEXT_PUBLIC_*`. Adapter hiện không cache phản hồi Google và không dùng wildcard Field Mask.
+
+Local development dùng rate limiter trong memory. Khi deploy nhiều instance trên Vercel, điền `UPSTASH_REDIS_REST_URL` và `UPSTASH_REDIS_REST_TOKEN` để giới hạn 10 search/phút/actor được dùng chung giữa các instance.
+
+## Tài liệu
+
+- [Kiến trúc tổng thể](docs/architecture.md)
+- [Database schema và RLS](docs/database-schema.md)
+- [Folder structure](docs/folder-structure.md)
+- [Báo cáo STEP 1–6](docs/implementation-steps-1-6.md)
+- [Báo cáo STEP 7](docs/implementation-step-7.md)
+- [Báo cáo STEP 8](docs/implementation-step-8.md)
+- [Báo cáo STEP 9](docs/implementation-step-9.md)
+- [Báo cáo STEP 10](docs/implementation-step-10.md)
+- [Báo cáo STEP 11](docs/implementation-step-11.md)
+
+## Trạng thái roadmap
+
+STEP 12 kế tiếp là Couple Session với guest/user membership và preference intersection. Merchant portal, community upload/OCR vẫn là post-MVP; Matches/Saved hiện là app-shell placeholders có chủ đích.

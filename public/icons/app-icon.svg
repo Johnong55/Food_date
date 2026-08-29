@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Đi Đâu Ăn Gì?</title>
+  <rect width="512" height="512" rx="124" fill="#fff7ee"/>
+  <circle cx="256" cy="256" r="170" fill="#ed634d"/>
+  <path d="M256 367c-13-12-104-78-104-144 0-43 31-72 70-72 23 0 42 11 54 30 12-19 31-30 54-30 39 0 70 29 70 72 0 66-91 132-104 144-11 10-29 10-40 0Z" fill="#fffaf5"/>
+  <path d="M220 183v84M196 183v50c0 18 11 31 24 31s24-13 24-31v-50M316 183v165M316 183c29 7 43 31 43 58 0 22-13 39-43 42" fill="none" stroke="#ed634d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
