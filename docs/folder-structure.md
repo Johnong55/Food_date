@@ -1,6 +1,6 @@
 # Folder structure
 
-## Cấu trúc hiện tại (STEP 1–11)
+## Cấu trúc hiện tại (STEP 1–14)
 
 ```text
 .
@@ -13,24 +13,37 @@
 │   ├── implementation-step-9.md
 │   ├── implementation-step-10.md
 │   ├── implementation-step-11.md
+│   ├── implementation-step-12.md
+│   ├── implementation-step-13.md
+│   ├── implementation-step-14.md
+│   ├── implementation-step-15.md
+│   ├── deployment-vercel.md
 │   └── implementation-steps-1-6.md
+├── e2e/                         # production mobile/PWA/a11y browser tests
 ├── public/
 │   ├── icons/
 │   └── sw.js
 ├── src/
 │   ├── app/
 │   │   ├── api/
+│   │   │   ├── couple/session/
+│   │   │   ├── collections/
+│   │   │   ├── history/
 │   │   │   ├── menu/resolve/
 │   │   │   ├── health/
 │   │   │   ├── place/
 │   │   │   │   ├── [placeId]/
 │   │   │   │   │   └── menu/
 │   │   │   │   └── photo/
+│   │   │   ├── saved/
 │   │   │   └── search/
 │   │   ├── auth/
+│   │   ├── couple/[code]/
 │   │   ├── explore/
+│   │   ├── history/
 │   │   ├── matches/
 │   │   ├── menu/[placeId]/
+│   │   ├── join/[code]/
 │   │   ├── offline/
 │   │   ├── profile/
 │   │   ├── restaurant/[placeId]/
@@ -38,11 +51,15 @@
 │   │   ├── globals.css
 │   │   ├── layout.tsx
 │   │   ├── manifest.ts
+│   │   ├── robots.ts
 │   │   └── page.tsx
 │   ├── components/
 │   │   └── ui/
 │   ├── features/
 │   │   ├── auth/
+│   │   ├── couple/
+│   │   │   ├── api/
+│   │   │   └── components/
 │   │   ├── discovery/
 │   │   │   ├── api/
 │   │   │   ├── components/
@@ -50,7 +67,11 @@
 │   │   ├── menu/
 │   │   │   ├── api/
 │   │   │   └── components/
-│   │   └── restaurant/
+│   │   ├── restaurant/
+│   │   │   ├── api/
+│   │   │   ├── components/
+│   │   │   └── hooks/
+│   │   └── saved/
 │   │       ├── api/
 │   │       ├── components/
 │   │       └── hooks/
@@ -61,20 +82,29 @@
 │   │   ├── rate-limit/
 │   │   └── supabase/
 │   ├── services/
+│   │   ├── couple/
 │   │   ├── discovery/
 │   │   ├── menu-resolver/
 │   │   │   ├── parsers/
 │   │   │   ├── providers/
 │   │   │   └── safe-fetch/
-│   │   └── places/
-│   │       └── google/
+│   │   ├── places/
+│   │   │   └── google/
+│   │   └── saved/
 │   ├── types/
+│   ├── instrumentation.ts       # sanitized structured request-error logs
 │   └── proxy.ts
-├── supabase/migrations/
+├── supabase/
+│   ├── migrations/
+│   └── tests/database/          # pgTAP grants/RLS regression suite
+├── .github/workflows/ci.yml
 ├── .env.example
 ├── components.json
+├── lighthouserc.cjs
 ├── next.config.ts
 ├── package.json
+├── playwright.config.ts
+├── vercel.json
 └── tsconfig.json
 ```
 

@@ -98,4 +98,38 @@ describe("GooglePlacesProvider", () => {
     expect(headers["X-Goog-FieldMask"]).toContain("parkingOptions");
     expect(headers["X-Goog-FieldMask"]).not.toContain("*");
   });
+
+  it("requests and enforces vegetarian food only when it is a hard filter", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        places: [
+          {
+            id: "unknown",
+            displayName: { text: "Chưa xác minh" },
+            location: { latitude: 10.775, longitude: 106.7 },
+          },
+          {
+            id: "verified",
+            displayName: { text: "Có món chay" },
+            location: { latitude: 10.776, longitude: 106.7 },
+            servesVegetarianFood: true,
+          },
+        ],
+      }),
+    );
+    const provider = new GooglePlacesProvider("a-secure-test-key-that-is-long", fetchMock);
+
+    const result = await provider.searchPlaces({
+      center: { latitude: 10.775, longitude: 106.7 },
+      radiusMeters: 3_000,
+      textQuery: "nhà hàng chay",
+      filters: { servesVegetarianFood: true },
+    });
+
+    expect(result.places.map((place) => place.id)).toEqual(["verified"]);
+    const [, init] = fetchMock.mock.calls[0] ?? [];
+    const headers = init?.headers as Record<string, string>;
+    expect(headers["X-Goog-FieldMask"]).toContain("places.servesVegetarianFood");
+    expect(headers["X-Goog-FieldMask"]).not.toContain("*");
+  });
 });

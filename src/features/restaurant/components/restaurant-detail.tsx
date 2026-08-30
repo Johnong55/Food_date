@@ -33,6 +33,8 @@ import {
   getAvailableFeatureLabels,
 } from "@/features/restaurant/detail-formatters";
 import { usePlaceDistance } from "@/features/restaurant/hooks/use-place-distance";
+import { SavePlaceButton } from "@/features/saved/components/save-place-button";
+import { VisitPlaceButton } from "@/features/saved/components/visit-place-button";
 import {
   buildGoogleMapsUrl,
   formatDistance,
@@ -278,6 +280,11 @@ function DetailContent({ place }: { place: PlaceDetails }) {
                 Gửi người yêu
                 <Send />
               </Button>
+              <SavePlaceButton placeId={place.id} />
+              <VisitPlaceButton
+                placeId={place.id}
+                placeName={place.displayName.text}
+              />
             </div>
             {shareStatus && (
               <p className="text-center text-xs font-semibold text-primary" role="status">

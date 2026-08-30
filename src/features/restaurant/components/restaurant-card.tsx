@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { GoogleMapsAttribution } from "@/features/restaurant/components/google-maps-attribution";
 import { PlacePhoto } from "@/features/restaurant/components/place-photo";
+import { SavePlaceButton } from "@/features/saved/components/save-place-button";
 import {
   buildGoogleMapsUrl,
   formatDistance,
@@ -137,12 +138,15 @@ export function RestaurantCard({ place, selected, onSelect }: RestaurantCardProp
             </p>
           )}
 
-          <Button asChild variant="secondary" className="w-full">
-            <Link href={detailUrl}>
-              Xem chi tiết
-              <ChevronRight />
-            </Link>
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button asChild variant="secondary" className="w-full">
+              <Link href={detailUrl}>
+                Xem chi tiết
+                <ChevronRight />
+              </Link>
+            </Button>
+            <SavePlaceButton placeId={place.id} />
+          </div>
 
           <div className="grid grid-cols-2 gap-2">
             <Button asChild variant="outline">

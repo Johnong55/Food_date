@@ -12,6 +12,7 @@ const SEARCH_BASE_FIELDS = [
 
 const SEARCH_PHOTO_FIELDS = ["places.photos"] as const;
 const SEARCH_OPEN_FIELDS = ["places.currentOpeningHours.openNow"] as const;
+const SEARCH_VEGETARIAN_FIELDS = ["places.servesVegetarianFood"] as const;
 const TEXT_SEARCH_PAGINATION_FIELDS = ["nextPageToken"] as const;
 
 const DETAIL_BASE_FIELDS = [
@@ -64,12 +65,14 @@ function joinFields(fields: readonly string[]) {
 export function buildSearchFieldMask(options: {
   includePhotos: boolean;
   includeOpenState: boolean;
+  includeVegetarianFood?: boolean;
   includeNextPageToken?: boolean;
 }) {
   return joinFields([
     ...SEARCH_BASE_FIELDS,
     ...(options.includePhotos ? SEARCH_PHOTO_FIELDS : []),
     ...(options.includeOpenState ? SEARCH_OPEN_FIELDS : []),
+    ...(options.includeVegetarianFood ? SEARCH_VEGETARIAN_FIELDS : []),
     ...(options.includeNextPageToken ? TEXT_SEARCH_PAGINATION_FIELDS : []),
   ]);
 }

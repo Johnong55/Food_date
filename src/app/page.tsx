@@ -1,4 +1,4 @@
-import { ArrowRight, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, HeartHandshake, MapPin, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { AppLogo } from "@/components/app-logo";
@@ -66,7 +66,7 @@ export default function HomePage() {
           <span className="text-4xl" aria-hidden="true">🎲</span>
           <div className="min-w-0 flex-1">
             <p className="font-extrabold">Không biết ăn gì 😭</p>
-            <p className="mt-1 text-sm text-primary-foreground/75">
+            <p className="mt-1 text-sm text-primary-foreground/90">
               Trả lời 3 câu, để app chọn hộ.
             </p>
           </div>
@@ -77,6 +77,25 @@ export default function HomePage() {
             aria-label="Chọn ngẫu nhiên"
           >
             <Link href="/explore?intent=random">
+              <ArrowRight />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-3 overflow-hidden border-rose-200 bg-rose-50">
+        <CardContent className="flex items-center gap-4">
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white text-rose-600 shadow-sm">
+            <HeartHandshake className="size-6" aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-extrabold">Chọn cùng người ấy</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Hai người chọn riêng, app tìm gu chung.
+            </p>
+          </div>
+          <Button asChild variant="outline" size="icon" aria-label="Mở Couple Mode">
+            <Link href="/matches">
               <ArrowRight />
             </Link>
           </Button>

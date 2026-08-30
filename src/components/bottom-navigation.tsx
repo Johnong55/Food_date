@@ -31,7 +31,15 @@ export function BottomNavigation() {
       <ul className="grid h-17 grid-cols-5 px-2">
         {navigationItems.map(({ href, label, icon: Icon }) => {
           const isActive =
-            href === "/" ? pathname === href : pathname.startsWith(href);
+            href === "/"
+              ? pathname === href
+              : href === "/matches"
+                ? pathname.startsWith("/matches") ||
+                  pathname.startsWith("/couple") ||
+                  pathname.startsWith("/join")
+                : href === "/saved"
+                  ? pathname.startsWith("/saved") || pathname.startsWith("/history")
+                : pathname.startsWith(href);
 
           return (
             <li key={href}>

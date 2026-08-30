@@ -37,6 +37,7 @@ function mapCommonPlace(place: GooglePlace, position: number): PlaceSummary {
       authorAttributions: photo.authorAttributions ?? [],
     })),
     currentOpeningHours: mapOpeningHours(place.currentOpeningHours),
+    servesVegetarianFood: place.servesVegetarianFood,
     googleResultPosition: position,
   };
 }

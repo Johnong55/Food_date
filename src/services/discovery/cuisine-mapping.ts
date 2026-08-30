@@ -60,6 +60,8 @@ export function buildPlaceSearchRequest(
       openNow: input.options.includes("open_now") || undefined,
       minRating: input.minRating,
       minReviewCount: input.minReviewCount,
+      servesVegetarianFood:
+        input.options.includes("vegetarian_friendly") || undefined,
     },
   };
 }

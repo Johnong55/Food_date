@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     "Giúp bạn và người thương chọn nơi ăn uống và đi chơi nhanh hơn.",
   applicationName: "Đi Đâu Ăn Gì?",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" }],
+    apple: [{ url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -29,7 +33,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
   themeColor: "#fffaf5",
 };

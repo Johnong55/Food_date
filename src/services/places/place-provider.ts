@@ -11,6 +11,7 @@ export type SearchFilters = {
   openNow?: boolean;
   minRating?: number;
   minReviewCount?: number;
+  servesVegetarianFood?: boolean;
   priceLevels?: Exclude<PlacePriceLevel, "PRICE_LEVEL_FREE">[];
 };
 

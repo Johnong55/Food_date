@@ -18,6 +18,10 @@
 
 # tests and tooling
 /coverage
+/.lighthouseci
+/lighthouse-reports
+/playwright-report
+/test-results
 *.tsbuildinfo
 next-env.d.ts
 

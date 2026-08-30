@@ -51,6 +51,7 @@ const searchRequestSchema = z.object({
       openNow: z.boolean().optional(),
       minRating: z.number().min(0).max(5).optional(),
       minReviewCount: z.number().int().min(0).optional(),
+      servesVegetarianFood: z.boolean().optional(),
       priceLevels: z
         .array(
           z.enum([
@@ -127,6 +128,8 @@ function filterInGoogleOrder(
           request.filters.priceLevels.includes(place.priceLevel))) &&
       (request.filters?.openNow !== true ||
         place.currentOpeningHours?.openNow === true) &&
+      (request.filters?.servesVegetarianFood !== true ||
+        place.servesVegetarianFood === true) &&
       (request.excludedTypes?.every((type) => !place.types.includes(type)) ?? true) &&
       (request.textQuery === undefined ||
         request.includedTypes === undefined ||
@@ -157,6 +160,8 @@ export class GooglePlacesProvider implements PlaceProvider {
     const fieldMask = buildSearchFieldMask({
       includePhotos: request.includePhotos,
       includeOpenState: needsOpenState,
+      includeVegetarianFood:
+        request.filters?.servesVegetarianFood === true,
       // Nearby Search has no pagination field; requesting an unknown response
       // field would make its required Field Mask invalid.
       includeNextPageToken:

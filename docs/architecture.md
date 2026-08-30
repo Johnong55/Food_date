@@ -152,7 +152,7 @@ erDiagram
     MENU_SECTIONS ||--o{ MENU_ITEMS : contains
 ```
 
-Migration hoàn chỉnh, constraints, index và RLS nằm tại `supabase/migrations/202608290001_initial_schema.sql`; diễn giải chi tiết nằm trong [database-schema.md](database-schema.md).
+Các migration hoàn chỉnh, constraints, index, RPC và RLS nằm trong `supabase/migrations/`; diễn giải chi tiết nằm trong [database-schema.md](database-schema.md).
 
 ## 5. API design
 
@@ -163,8 +163,8 @@ Migration hoàn chỉnh, constraints, index và RLS nằm tại `supabase/migrat
 - Error envelope: `{ "error": { "code": "RATE_LIMITED", "message": "...", "requestId": "...", "details": [] } }`.
 - API Places trả `Cache-Control: private, no-store`; CDN caching bị tắt.
 - Guest couple request dùng opaque secret trong HTTP-only, Secure, SameSite=Lax cookie. DB chỉ lưu hash; code để join không đồng thời là credential để swipe.
-- Các POST tạo resource nhận `Idempotency-Key`; duplicate key cùng actor trả lại kết quả cũ.
-- Baseline rate limits: search 10/phút actor, details 30/phút, menu resolve 3/10 phút, session mutation 60/phút. Search dùng atomic Redis script khi có Upstash; memory limiter chỉ dành cho local/single instance. Con số phải chỉnh theo abuse/cost telemetry.
+- UI khóa create/join trong lúc request và join RPC idempotent cho member hiện hữu. Durable `Idempotency-Key` cho create là production-gate STEP 15 trước khi client tự động retry mutation.
+- Baseline rate limits: search 10/phút actor, details 30/phút, menu resolve 3/10 phút; Couple create 5/giờ, join 15/10 phút, read 60/phút, preferences 20/phút, candidate deck 10/5 phút, swipe 60/phút và match poll 30/phút; owned-data read 60/phút, write 20–30/phút. Redis được dùng khi có Upstash; memory limiter chỉ dành cho local/single instance. Con số phải chỉnh theo abuse/cost telemetry.
 
 ### Endpoints MVP
 
@@ -175,13 +175,19 @@ Migration hoàn chỉnh, constraints, index và RLS nằm tại `supabase/migrat
 | `GET /api/place/:placeId` | guest/user | validated opaque Place ID | `PlaceDetails`; reviews/attributes chỉ khi detail UI mở | Implemented (STEP 10) |
 | `GET /api/place/:placeId/menu` | guest/user | place ID | DB-first verified menu; fresh Place context chỉ khi DB miss | Implemented (STEP 11) |
 | `POST /api/menu/resolve` | limited guest/user | place ID only | user-triggered, bounded official website resolution; URL lấy server-side từ Place Details | Implemented (STEP 11) |
-| `POST /api/couple/session` | guest/user | expiry, optional display name | code + share URL; sets member credential | STEP 12 |
-| `POST /api/couple/session/:code/join` | guest/user | display name | membership; sets member credential | STEP 12 |
-| `POST /api/couple/session/:code/preferences` | member | validated preferences | safe intersection readiness only | STEP 12 |
-| `POST /api/couple/session/:code/swipe` | member | place ID, left/right/super_like | own accepted state; never peer decision | STEP 13 |
-| `GET /api/couple/session/:code/matches` | member | cursor | matched Place IDs only | STEP 13 |
-| `POST /api/saved` | user | place ID + collection ID | saved application record | STEP 14 |
-| `DELETE /api/saved/:id` | user | saved UUID | 204 | STEP 14 |
+| `POST /api/couple/session` | guest/user | display name | 24h code + share URL; guest gets HttpOnly member credential | Implemented (STEP 12) |
+| `GET /api/couple/session/:code` | member | code + user/cookie credential | own preference, peer readiness, shared intersection only | Implemented (STEP 12) |
+| `POST /api/couple/session/:code/join` | guest/user | display name | transactional membership, maximum two people | Implemented (STEP 12) |
+| `POST /api/couple/session/:code/preferences` | member | validated bounded preferences | transactional readiness + privacy-safe intersection | Implemented (STEP 12) |
+| `POST /api/couple/session/:code/candidates` | member | code + member credential | transient Google summaries; DB stores only Place IDs/order | Implemented (STEP 13) |
+| `POST /api/couple/session/:code/swipe` | member | place ID, left/right/super_like | own state + mutual match only; never peer decision | Implemented (STEP 13) |
+| `GET /api/couple/session/:code/matches` | member | code + member credential | matched Place IDs and own progress only | Implemented (STEP 13) |
+| `GET/POST /api/saved` | user | optional place ID / place ID + collection ID | application records only; no Places Content persisted | Implemented (STEP 14) |
+| `PATCH/DELETE /api/saved/:id` | user | collection ID / saved UUID | move/merge or 204; RLS owner enforced | Implemented (STEP 14) |
+| `GET/POST /api/collections` | user | collection name | list/create owner collections | Implemented (STEP 14) |
+| `DELETE /api/collections/:id` | user | collection UUID | delete; saved records become unfiled | Implemented (STEP 14) |
+| `GET/POST /api/history` | user | user-owned visit details | timeline / created visit record | Implemented (STEP 14) |
+| `DELETE /api/history/:id` | user | visit UUID | 204; RLS owner enforced | Implemented (STEP 14) |
 | `GET /api/health` | public | none | readiness without secrets | Implemented |
 
 ### `POST /api/search` contract
@@ -326,9 +332,11 @@ Thứ tự nguồn:
 | Foundation — hoàn thành | STEP 1–6 | docs, schema/RLS, runnable Next app, PWA assets/offline, Supabase auth boundary, tested Places adapter |
 | Discovery — hoàn thành | STEP 7–10 | wizard, Search API, attributed cards, detail-on-demand, reviews/attributes và sticky actions đã xong |
 | Menu — hoàn thành | STEP 11 basic | DB provider + safe official website provider + fallback, provenance/freshness UI, security tests |
-| Couple decision | STEP 12–13 | guest/user sessions, preference intersection, hidden swipe, atomic match detection, Quick Pick/Roulette |
-| Retention | STEP 14 | save, collections, history, optimistic UI, personalization reset |
-| Production gate | STEP 15 | unit/integration/E2E, SSRF suite, RLS audit, accessibility, Lighthouse ≥90 target, monitoring, Vercel runbook |
+| Couple foundation — hoàn thành | STEP 12 | guest/user sessions, opaque guest credential, preference intersection và share UX |
+| Couple decision — hoàn thành | STEP 13 | Google-order candidates, hidden swipe, atomic match detection và match UX |
+| Retention — hoàn thành | STEP 14 | save, collections, history timeline và optimistic rollback |
+| Decision modes | post-MVP | Quick Pick, Roulette, Battle và No Thinking Mode |
+| Production gate — hoàn thành | STEP 15 | unit/contract + production E2E, SSRF suite, RLS/grants audit, accessibility 100, Lighthouse median ≥90, structured logs và Vercel runbook |
 | Post-MVP | after stable metrics | AI parser, merchant portal, moderated community OCR, advanced personalization, activities, notifications |
 
-Trước production phải cấu hình distributed rate limit và Google quota/budget alerts; không mở website resolver trước SSRF/robots test suite; không mở peer swipe query trực tiếp qua Supabase client.
+Trước khi phát hành public phải điền Upstash để rate limit dùng chung giữa instance và cấu hình Google quota/budget alerts. Website resolver đã có SSRF/robots suite; peer swipe query vẫn bị chặn ở cả RLS lẫn table grants. Checklist phát hành nằm trong [deployment-vercel.md](deployment-vercel.md).

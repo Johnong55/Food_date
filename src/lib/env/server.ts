@@ -8,7 +8,13 @@ const supabasePublicEnvSchema = z.object({
 });
 
 const supabaseAdminEnvSchema = supabasePublicEnvSchema.extend({
-  serviceRoleKey: z.string().min(20),
+  serviceRoleKey: z
+    .string()
+    .min(20)
+    .refine(
+      (value) => !value.startsWith("your-"),
+      "Placeholder service role key is not configured.",
+    ),
 });
 
 const googlePlacesEnvSchema = z.object({
@@ -46,6 +52,13 @@ export function getSupabaseAdminEnv() {
     ...getSupabasePublicEnv(),
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   });
+}
+
+export function hasSupabaseAdminEnv() {
+  return supabaseAdminEnvSchema.safeParse({
+    ...readSupabasePublicEnv(),
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  }).success;
 }
 
 export function getGooglePlacesEnv() {

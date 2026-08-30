@@ -2,7 +2,7 @@
 
 Mobile-first PWA giúp cặp đôi và nhóm bạn quyết định ăn gì, uống gì và đi đâu mà không phải lướt vô tận.
 
-Repository hiện hoàn thành **STEP 1 → STEP 11**:
+Repository hiện hoàn thành **STEP 1 → STEP 15**:
 
 - kiến trúc sản phẩm, hệ thống, dữ liệu, API, PWA và MenuResolver;
 - Next.js 16 App Router, React 19, TypeScript strict, Tailwind CSS v4 và shadcn/ui foundation;
@@ -19,7 +19,16 @@ Repository hiện hoàn thành **STEP 1 → STEP 11**:
 - MenuResolver DB-first với provider abstraction, provenance/freshness, schema.org/static HTML parser và explicit fallback;
 - official website crawler chỉ chạy sau thao tác người dùng, tuân thủ robots.txt, chặn SSRF/DNS rebinding và giới hạn timeout/size/concurrency;
 - trang menu mobile-first có search món, section tabs, nguồn dữ liệu, ngày cập nhật và price fallback;
-- migration PostgreSQL có indexes, constraints và RLS.
+- Couple Session cho guest/user với share code/link, membership cookie an toàn và thời hạn 24 giờ;
+- preference riêng tư, readiness polling và intersection ngân sách/radius/cuisine/mood không làm lộ lựa chọn riêng của partner;
+- candidate deck giữ thứ tự Google, chỉ persist Place ID, swipe kín left/right/super-like và match detection atomic;
+- swipe card hỗ trợ kéo ngang, optimistic rollback, match polling và màn ăn mừng chỉ khi cả hai cùng thích;
+- Save/Collections dùng Supabase user session + RLS, chỉ persist Place ID và tải fresh Places Content theo viewport;
+- History timeline lưu rating, ghi chú, ngày ghé và chi phí do người dùng sở hữu; restaurant detail có optimistic Save/Visited actions;
+- migration PostgreSQL có indexes, constraints, RLS và explicit least-privilege grants;
+- CSP/HSTS/security headers, readiness health check và structured server error logging không chứa cookies/query;
+- production Playwright trên Pixel 7, Axe WCAG checks, Lighthouse CI median ≥90 và database pgTAP security suite;
+- GitHub Actions quality/browser/database gates cùng Vercel/Supabase/Google release runbook.
 
 ## Chạy local
 
@@ -36,16 +45,20 @@ Mở [http://localhost:3000](http://localhost:3000). App shell và guest mode ch
 ## Kiểm tra chất lượng
 
 ```bash
-npm run typecheck
+npm run build        # production bundle
 npm run lint
-npm test
-npm run build
+npm run typecheck
+npm test             # unit/contract
+npm run test:e2e     # production server + mobile Playwright + Axe + PWA checks
+npm run lighthouse   # median Lighthouse gate trên Home và Explore
+npm run test:db      # pgTAP; cần Supabase local/Docker đang chạy
+npm audit
 ```
 
 ## Supabase
 
 1. Tạo project Supabase.
-2. Chạy migration [202608290001_initial_schema.sql](supabase/migrations/202608290001_initial_schema.sql).
+2. Link project rồi chạy `npx supabase@latest db push` để áp dụng toàn bộ migration, gồm schema gốc, guest credentials, Swipe Match, Saved/History và production least-privilege grants.
 3. Điền `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` và server-only `SUPABASE_SERVICE_ROLE_KEY`.
 4. Bật Google provider trong Supabase Auth và thêm callback URL do Supabase cung cấp vào Google OAuth client.
 5. Đặt Site URL và redirect URL cho local, preview và production trong Supabase Auth.
@@ -74,7 +87,12 @@ Local development dùng rate limiter trong memory. Khi deploy nhiều instance t
 - [Báo cáo STEP 9](docs/implementation-step-9.md)
 - [Báo cáo STEP 10](docs/implementation-step-10.md)
 - [Báo cáo STEP 11](docs/implementation-step-11.md)
+- [Báo cáo STEP 12](docs/implementation-step-12.md)
+- [Báo cáo STEP 13](docs/implementation-step-13.md)
+- [Báo cáo STEP 14](docs/implementation-step-14.md)
+- [Báo cáo STEP 15](docs/implementation-step-15.md)
+- [Runbook deploy Vercel](docs/deployment-vercel.md)
 
 ## Trạng thái roadmap
 
-STEP 12 kế tiếp là Couple Session với guest/user membership và preference intersection. Merchant portal, community upload/OCR vẫn là post-MVP; Matches/Saved hiện là app-shell placeholders có chủ đích.
+MVP STEP 1–15 đã qua production gate trong repository. Việc phát hành public còn cần điền production secrets/domain, cấu hình Google OAuth/quota alert và import repository vào Vercel theo runbook. Decision modes mở rộng, merchant portal và community upload/OCR vẫn là post-MVP.

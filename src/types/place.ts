@@ -101,6 +101,7 @@ export type PlaceSummary = {
   priceLevel?: PlacePriceLevel;
   photos: PlacePhoto[];
   currentOpeningHours?: PlaceOpeningHours;
+  servesVegetarianFood?: boolean;
   distanceMeters?: number;
   googleResultPosition: number;
 };
