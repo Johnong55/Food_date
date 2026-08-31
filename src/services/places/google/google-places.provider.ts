@@ -21,6 +21,7 @@ import {
   type PlaceSearchResult,
 } from "@/services/places/place-provider";
 import { haversineDistanceMeters } from "@/lib/geo/distance";
+import type { GooglePlacesRequestAuthenticator } from "@/services/places/google/google-places.auth";
 import type {
   PlacePhotoAsset,
   PlacePhotoRequest,
@@ -144,14 +145,10 @@ export class GooglePlacesProvider implements PlaceProvider {
   readonly id = "google_places" as const;
 
   constructor(
-    private readonly apiKey: string,
+    private readonly authenticator: GooglePlacesRequestAuthenticator,
     private readonly fetchImpl: typeof fetch = fetch,
     private readonly timeoutMs = DEFAULT_TIMEOUT_MS,
-  ) {
-    if (!apiKey.trim()) {
-      throw new Error("Google Places API key is required.");
-    }
-  }
+  ) {}
 
   async searchPlaces(input: PlaceSearchRequest): Promise<PlaceSearchResult> {
     const request = searchRequestSchema.parse(input);
@@ -299,6 +296,7 @@ export class GooglePlacesProvider implements PlaceProvider {
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
+      const authHeaders = await this.authenticator.getRequestHeaders();
       const response = await this.fetchImpl(url, {
         ...init,
         cache: "no-store",
@@ -306,7 +304,7 @@ export class GooglePlacesProvider implements PlaceProvider {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "X-Goog-Api-Key": this.apiKey,
+          ...authHeaders,
           ...(fieldMask ? { "X-Goog-FieldMask": fieldMask } : {}),
           ...init.headers,
         },

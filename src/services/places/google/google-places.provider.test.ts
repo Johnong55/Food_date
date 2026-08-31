@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
+import {
+  GoogleApiKeyPlacesAuth,
+  GoogleOAuthPlacesAuth,
+} from "@/services/places/google/google-places.auth";
 import { GooglePlacesProvider } from "@/services/places/google/google-places.provider";
 
 describe("GooglePlacesProvider", () => {
@@ -37,7 +41,10 @@ describe("GooglePlacesProvider", () => {
         { status: 200, headers: { "Content-Type": "application/json" } },
       ),
     );
-    const provider = new GooglePlacesProvider("a-secure-test-key-that-is-long", fetchMock);
+    const provider = new GooglePlacesProvider(
+      new GoogleApiKeyPlacesAuth("a-secure-test-key-that-is-long"),
+      fetchMock,
+    );
 
     const result = await provider.searchPlaces({
       center: { latitude: 10.775, longitude: 106.7 },
@@ -55,6 +62,7 @@ describe("GooglePlacesProvider", () => {
       "places.currentOpeningHours.openNow",
     );
     expect(headers["X-Goog-FieldMask"]).not.toContain("nextPageToken");
+    expect(headers["X-Goog-Api-Key"]).toBe("a-secure-test-key-that-is-long");
     expect(JSON.parse(String(init?.body)).minRating).toBe(4);
   });
 
@@ -77,7 +85,7 @@ describe("GooglePlacesProvider", () => {
       }),
     );
     const provider = new GooglePlacesProvider(
-      "a-secure-test-key-that-is-long",
+      new GoogleApiKeyPlacesAuth("a-secure-test-key-that-is-long"),
       fetchMock,
     );
 
@@ -117,7 +125,10 @@ describe("GooglePlacesProvider", () => {
         ],
       }),
     );
-    const provider = new GooglePlacesProvider("a-secure-test-key-that-is-long", fetchMock);
+    const provider = new GooglePlacesProvider(
+      new GoogleApiKeyPlacesAuth("a-secure-test-key-that-is-long"),
+      fetchMock,
+    );
 
     const result = await provider.searchPlaces({
       center: { latitude: 10.775, longitude: 106.7 },
@@ -131,5 +142,34 @@ describe("GooglePlacesProvider", () => {
     const headers = init?.headers as Record<string, string>;
     expect(headers["X-Goog-FieldMask"]).toContain("places.servesVegetarianFood");
     expect(headers["X-Goog-FieldMask"]).not.toContain("*");
+  });
+
+  it("uses a short-lived OAuth token and quota project in ADC mode", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({ places: [] }),
+    );
+    const tokenProvider = {
+      getAccessToken: vi.fn().mockResolvedValue("short-lived-token"),
+    };
+    const provider = new GooglePlacesProvider(
+      new GoogleOAuthPlacesAuth(
+        "amazing-codex-470603-t4",
+        tokenProvider,
+      ),
+      fetchMock,
+    );
+
+    await provider.searchPlaces({
+      center: { latitude: 10.775, longitude: 106.7 },
+      radiusMeters: 1_000,
+    });
+
+    const [, init] = fetchMock.mock.calls[0] ?? [];
+    const headers = init?.headers as Record<string, string>;
+    expect(headers.Authorization).toBe("Bearer short-lived-token");
+    expect(headers["X-Goog-User-Project"]).toBe(
+      "amazing-codex-470603-t4",
+    );
+    expect(headers["X-Goog-Api-Key"]).toBeUndefined();
   });
 });

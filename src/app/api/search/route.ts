@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
     if (!hasGooglePlacesEnv()) {
       return apiError(
         "PLACES_NOT_CONFIGURED",
-        "Chưa kết nối Google Places. Hãy thêm GOOGLE_MAPS_API_KEY để tìm quán thật.",
+        "Chưa cấu hình xác thực Google Places phía server.",
         { status: 503, requestId, rateLimit },
       );
     }

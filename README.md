@@ -68,11 +68,13 @@ npm audit
 ## Google Places
 
 1. Tạo Google Cloud project có billing và bật **Places API (New)**.
-2. Tạo key riêng cho server, giới hạn API về Places API (New), thêm IP restriction nếu hạ tầng có egress IP ổn định.
-3. Điền `GOOGLE_MAPS_API_KEY` vào `.env.local` và Vercel Environment Variables.
+2. Chọn một cơ chế xác thực server:
+   - `GOOGLE_PLACES_AUTH_MODE=api_key`: điền `GOOGLE_MAPS_API_KEY`, giới hạn API về Places API (New), và chỉ thêm IP restriction khi server có egress IP ổn định.
+   - `GOOGLE_PLACES_AUTH_MODE=adc`: điền `GOOGLE_CLOUD_PROJECT_ID`, rồi cấu hình Application Default Credentials hoặc service account. Mode này dùng OAuth token ngắn hạn và phù hợp hơn khi IP thay đổi.
+3. Với ADC trên máy local, chạy `gcloud auth application-default login` rồi `gcloud auth application-default set-quota-project <project-id>`.
 4. Nếu sau này dùng Maps JavaScript API, tạo một browser key khác, giới hạn HTTPS referrer và chỉ cho Maps JavaScript API.
 
-Không đưa `GOOGLE_MAPS_API_KEY` vào biến `NEXT_PUBLIC_*`. Adapter hiện không cache phản hồi Google và không dùng wildcard Field Mask.
+Không đưa API key, service account email/private key hoặc ADC credential vào biến `NEXT_PUBLIC_*`. Adapter hiện không cache phản hồi Google và không dùng wildcard Field Mask.
 
 Local development dùng rate limiter trong memory. Khi deploy nhiều instance trên Vercel, điền `UPSTASH_REDIS_REST_URL` và `UPSTASH_REDIS_REST_TOKEN` để giới hạn 10 search/phút/actor được dùng chung giữa các instance.
 

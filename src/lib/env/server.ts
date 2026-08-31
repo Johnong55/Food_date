@@ -17,12 +17,40 @@ const supabaseAdminEnvSchema = supabasePublicEnvSchema.extend({
     ),
 });
 
-const googlePlacesEnvSchema = z.object({
+const googlePlacesApiKeyEnvSchema = z.object({
+  authMode: z.literal("api_key"),
   apiKey: z
     .string()
     .min(20)
     .refine((value) => !value.startsWith("your-"), "Placeholder API key is not configured."),
 });
+
+const googlePlacesAdcEnvSchema = z
+  .object({
+    authMode: z.literal("adc"),
+    projectId: z
+      .string()
+      .regex(
+        /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/,
+        "Google Cloud project ID is invalid.",
+      ),
+    serviceAccountEmail: z.email().optional(),
+    serviceAccountPrivateKey: z.string().min(100).optional(),
+  })
+  .superRefine((value, context) => {
+    if (Boolean(value.serviceAccountEmail) !== Boolean(value.serviceAccountPrivateKey)) {
+      context.addIssue({
+        code: "custom",
+        message:
+          "Service account email and private key must be configured together.",
+      });
+    }
+  });
+
+const googlePlacesEnvSchema = z.union([
+  googlePlacesApiKeyEnvSchema,
+  googlePlacesAdcEnvSchema,
+]);
 
 const upstashEnvSchema = z.object({
   url: z.url().refine((value) => value.startsWith("https://"), "Upstash URL must use HTTPS."),
@@ -62,15 +90,31 @@ export function hasSupabaseAdminEnv() {
 }
 
 export function getGooglePlacesEnv() {
-  return googlePlacesEnvSchema.parse({
-    apiKey: process.env.GOOGLE_MAPS_API_KEY,
-  });
+  return googlePlacesEnvSchema.parse(readGooglePlacesEnv());
 }
 
 export function hasGooglePlacesEnv() {
-  return googlePlacesEnvSchema.safeParse({
+  return googlePlacesEnvSchema.safeParse(readGooglePlacesEnv()).success;
+}
+
+function readGooglePlacesEnv() {
+  const authMode = process.env.GOOGLE_PLACES_AUTH_MODE || "api_key";
+  if (authMode === "adc") {
+    return {
+      authMode,
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      serviceAccountEmail:
+        process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || undefined,
+      serviceAccountPrivateKey: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+        ? process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, "\n")
+        : undefined,
+    };
+  }
+
+  return {
+    authMode,
     apiKey: process.env.GOOGLE_MAPS_API_KEY,
-  }).success;
+  };
 }
 
 export function getOptionalUpstashEnv() {

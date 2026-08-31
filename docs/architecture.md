@@ -237,7 +237,11 @@ Chi tiết current/target tree và dependency rules ở [folder-structure.md](fo
 | `NEXT_PUBLIC_SUPABASE_URL` | browser | auth/data | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser | auth/data | public anon key, chỉ an toàn cùng RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | server only | guest APIs/admin jobs | privileged DB access |
-| `GOOGLE_MAPS_API_KEY` | server only | discovery | Places API (New) web service |
+| `GOOGLE_PLACES_AUTH_MODE` | server only | discovery | `api_key` or OAuth/`adc` |
+| `GOOGLE_MAPS_API_KEY` | server only | discovery | Places API (New), API-key mode only |
+| `GOOGLE_CLOUD_PROJECT_ID` | server only | discovery | OAuth quota/billing project |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | server only | discovery | optional OAuth credential for non-Google hosts |
+| `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` | server only | discovery | optional OAuth credential for non-Google hosts |
 | `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` | browser | chỉ khi render map | Maps JavaScript API key riêng |
 | `UPSTASH_REDIS_REST_URL/TOKEN` | server only | optional | rate limit/app-owned cache |
 | `SENTRY_DSN` | server/build | optional | error monitoring |
@@ -257,7 +261,7 @@ Chỉ bật khi cần:
 - **Maps JavaScript API** cho bản đồ tương tác ở phase sau; không cần cho deep link Google Maps.
 - Dùng Autocomplete (New) thuộc Places API (New) cho search vị trí; dùng session token đúng billing contract.
 
-Tạo hai key tách biệt: server key cho Places API (New), browser key cho Maps JS. Server key nằm ngoài source, API-restricted và IP-restricted nếu môi trường có egress IP cố định; browser key giới hạn HTTPS referrer. Google khuyến nghị key restriction, key riêng theo app và secure proxy cho web-service call từ client: [API security guidance](https://developers.google.com/maps/api-security-best-practices).
+Server có thể dùng API key hoặc OAuth/ADC. OAuth dùng access token ngắn hạn cùng quota project và được ưu tiên khi egress IP thay đổi; API key phải nằm ngoài source, chỉ cho Places API (New), và chỉ IP-restrict khi có egress cố định. Browser key cho Maps JS luôn là key riêng, giới hạn HTTPS referrer. Google khuyến nghị OAuth cho server-side API có hỗ trợ và secure proxy cho web-service call từ client: [API security guidance](https://developers.google.com/maps/api-security-best-practices).
 
 Field Mask là bắt buộc, không có default, và wildcard không phù hợp production: [Choose fields](https://developers.google.com/maps/documentation/places/web-service/choose-fields), [Nearby Search (New)](https://developers.google.com/maps/documentation/places/web-service/nearby-search), [Text Search (New)](https://developers.google.com/maps/documentation/places/web-service/text-search).
 

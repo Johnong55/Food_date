@@ -48,10 +48,10 @@ Do not use the Google Places key as the OAuth client secret.
 
 ## 4. Configure Google Cloud
 
-Enable **Places API (New)** and create a dedicated server key:
+Enable **Places API (New)** and choose one server authentication strategy:
 
-- API restriction: only Places API (New).
-- Application restriction: use static egress IP restriction only if the Vercel plan provides stable egress; never add an invalid IP restriction that breaks production.
+- OAuth/ADC (recommended when egress IPs vary): create a least-privilege service account, grant it `Service Usage Consumer` on this project, and store its email/private key only in encrypted Vercel server environment variables. Prefer Workload Identity Federation when the deployment platform supports it.
+- API key: restrict it to Places API (New), and use static egress IP restriction only if the Vercel plan provides stable egress; never add an invalid IP restriction that breaks production.
 - Quotas/budget: configure daily budget alerts and review Places SKU usage after launch.
 - Keep Maps JavaScript API disabled until a real in-app map is shipped. If enabled later, create a separate browser key restricted by production HTTPS referrers.
 
@@ -76,10 +76,22 @@ NEXT_PUBLIC_SITE_URL=https://<production-domain>
 NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable-or-anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<server-only-service-role-key>
+GOOGLE_PLACES_AUTH_MODE=api_key
 GOOGLE_MAPS_API_KEY=<server-only-places-key>
 UPSTASH_REDIS_REST_URL=<optional-but-recommended-for-multi-instance>
 UPSTASH_REDIS_REST_TOKEN=<optional-but-recommended-for-multi-instance>
 ```
+
+For OAuth/ADC instead of an API key, replace `GOOGLE_MAPS_API_KEY` with:
+
+```text
+GOOGLE_PLACES_AUTH_MODE=adc
+GOOGLE_CLOUD_PROJECT_ID=<google-cloud-project-id>
+GOOGLE_SERVICE_ACCOUNT_EMAIL=<server-only-service-account-email>
+GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+In API-key mode, set `GOOGLE_PLACES_AUTH_MODE=api_key`. In OAuth mode the adapter sends a short-lived Bearer token and the quota project header; the private key is never returned to the browser.
 
 Never expose the service-role or Places server key with a `NEXT_PUBLIC_` prefix. Use separate values for Preview when Preview connects to a separate Supabase project; otherwise disable state-changing preview access.
 
