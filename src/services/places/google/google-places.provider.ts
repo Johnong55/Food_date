@@ -101,8 +101,21 @@ type GoogleErrorBody = {
   error?: {
     message?: string;
     status?: string;
+    details?: Array<{
+      "@type"?: string;
+      domain?: string;
+      reason?: string;
+    }>;
   };
 };
+
+function getGoogleErrorReason(body: GoogleErrorBody) {
+  return body.error?.details?.find(
+    (detail) =>
+      detail["@type"] === "type.googleapis.com/google.rpc.ErrorInfo" ||
+      detail.domain === "googleapis.com",
+  )?.reason;
+}
 
 function googleCompatibleMinRating(minRating: number | undefined) {
   if (minRating === undefined) return undefined;
@@ -316,6 +329,7 @@ export class GooglePlacesProvider implements PlaceProvider {
           errorBody.error?.message ?? "Google Places request failed.",
           response.status,
           errorBody.error?.status,
+          getGoogleErrorReason(errorBody),
         );
       }
 

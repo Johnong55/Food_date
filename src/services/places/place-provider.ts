@@ -36,6 +36,7 @@ export class PlaceProviderError extends Error {
     message: string,
     readonly status: number,
     readonly code?: string,
+    readonly reason?: string,
   ) {
     super(message);
     this.name = "PlaceProviderError";

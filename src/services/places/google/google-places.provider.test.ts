@@ -17,6 +17,43 @@ describe("GooglePlacesProvider", () => {
     });
   });
 
+  it("preserves the structured Google ErrorInfo reason", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json(
+        {
+          error: {
+            code: 403,
+            message: "Request is blocked.",
+            status: "PERMISSION_DENIED",
+            details: [
+              {
+                "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+                reason: "API_KEY_HTTP_REFERRER_BLOCKED",
+                domain: "googleapis.com",
+              },
+            ],
+          },
+        },
+        { status: 403 },
+      ),
+    );
+    const provider = new GooglePlacesProvider(
+      new GoogleApiKeyPlacesAuth("a-secure-test-key-that-is-long"),
+      fetchMock,
+    );
+
+    const result = provider.searchPlaces({
+      center: { latitude: 10.775, longitude: 106.7 },
+      radiusMeters: 1_000,
+    });
+
+    await expect(result).rejects.toMatchObject({
+      status: 403,
+      code: "PERMISSION_DENIED",
+      reason: "API_KEY_HTTP_REFERRER_BLOCKED",
+    });
+  });
+
   it("uses explicit masks, no-store, exact local filters, and Google order", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(

@@ -92,6 +92,46 @@ function mapPlacesError(
     );
   }
 
+  if (error.reason === "API_KEY_INVALID") {
+    return apiError(
+      "PLACES_API_KEY_INVALID",
+      "Google Places API key không hợp lệ hoặc đã bị thu hồi.",
+      { status: 503, requestId, rateLimit },
+    );
+  }
+
+  if (error.reason === "API_KEY_SERVICE_BLOCKED") {
+    return apiError(
+      "PLACES_API_NOT_ALLOWED",
+      "API key chưa được phép sử dụng Places API (New).",
+      { status: 503, requestId, rateLimit },
+    );
+  }
+
+  if (error.reason?.startsWith("API_KEY_") && error.reason.endsWith("_BLOCKED")) {
+    return apiError(
+      "PLACES_API_KEY_RESTRICTED",
+      "Application restriction của API key không phù hợp với backend Vercel.",
+      { status: 503, requestId, rateLimit },
+    );
+  }
+
+  if (error.reason === "SERVICE_DISABLED") {
+    return apiError(
+      "PLACES_API_DISABLED",
+      "Places API (New) chưa được bật trong project chứa API key.",
+      { status: 503, requestId, rateLimit },
+    );
+  }
+
+  if (error.reason === "BILLING_DISABLED") {
+    return apiError(
+      "PLACES_BILLING_DISABLED",
+      "Billing của Google Cloud project đang bị tắt.",
+      { status: 503, requestId, rateLimit },
+    );
+  }
+
   if (
     error.status === 403 ||
     error.status === 429 ||
@@ -180,6 +220,12 @@ export async function POST(request: NextRequest) {
       );
     }
     if (error instanceof PlaceProviderError && rateLimit) {
+      console.error("Google Places search failed", {
+        requestId,
+        status: error.status,
+        code: error.code,
+        reason: error.reason,
+      });
       return mapPlacesError(error, requestId, rateLimit);
     }
 
