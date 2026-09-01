@@ -7,6 +7,16 @@ import {
 import { GooglePlacesProvider } from "@/services/places/google/google-places.provider";
 
 describe("GooglePlacesProvider", () => {
+  it("normalizes surrounding whitespace from a pasted API key", async () => {
+    const auth = new GoogleApiKeyPlacesAuth(
+      "  a-secure-test-key-that-is-long\n",
+    );
+
+    await expect(auth.getRequestHeaders()).resolves.toEqual({
+      "X-Goog-Api-Key": "a-secure-test-key-that-is-long",
+    });
+  });
+
   it("uses explicit masks, no-store, exact local filters, and Google order", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(

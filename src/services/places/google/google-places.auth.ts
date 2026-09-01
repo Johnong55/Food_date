@@ -28,10 +28,14 @@ export type GooglePlacesOAuthConfig = {
 export class GoogleApiKeyPlacesAuth
   implements GooglePlacesRequestAuthenticator
 {
-  constructor(private readonly apiKey: string) {
-    if (!apiKey.trim()) {
+  private readonly apiKey: string;
+
+  constructor(apiKey: string) {
+    const normalizedApiKey = apiKey.trim();
+    if (!normalizedApiKey) {
       throw new Error("Google Places API key is required.");
     }
+    this.apiKey = normalizedApiKey;
   }
 
   async getRequestHeaders() {

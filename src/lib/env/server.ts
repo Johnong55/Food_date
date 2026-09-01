@@ -97,6 +97,11 @@ export function hasGooglePlacesEnv() {
   return googlePlacesEnvSchema.safeParse(readGooglePlacesEnv()).success;
 }
 
+export function getGooglePlacesAuthMode() {
+  const parsed = googlePlacesEnvSchema.safeParse(readGooglePlacesEnv());
+  return parsed.success ? parsed.data.authMode : "invalid";
+}
+
 function readGooglePlacesEnv() {
   const authMode = process.env.GOOGLE_PLACES_AUTH_MODE || "api_key";
   if (authMode === "adc") {

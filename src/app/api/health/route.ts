@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import {
+  getGooglePlacesAuthMode,
   hasGooglePlacesEnv,
   hasSupabaseAdminEnv,
   hasSupabaseEnv,
@@ -21,6 +22,7 @@ export function GET() {
       status: ready ? "ok" : "degraded",
       ready,
       services,
+      placesAuthMode: getGooglePlacesAuthMode(),
       version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ?? "local",
       timestamp: new Date().toISOString(),
     },
