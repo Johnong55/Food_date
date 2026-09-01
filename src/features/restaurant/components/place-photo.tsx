@@ -4,7 +4,10 @@ import { ExternalLink, ImageOff } from "lucide-react";
 import { Fragment, useEffect, useRef, useState } from "react";
 
 import { getPlacePhoto } from "@/features/restaurant/api/get-place-photo";
-import { safeExternalUrl } from "@/features/restaurant/place-formatters";
+import {
+  buildGoogleMapsPlaceUrl,
+  safeExternalUrl,
+} from "@/features/restaurant/place-formatters";
 import { cn } from "@/lib/utils";
 import type { PlacePhoto as PlacePhotoData } from "@/types/place";
 
@@ -76,6 +79,7 @@ function PlacePhotoContent({
   const photoUri = photoAsset?.photoUri;
   const sourceUrl = safeExternalUrl(resolvedPhoto?.googleMapsUri);
   const authors = resolvedPhoto?.authorAttributions ?? [];
+  const fallbackMapsUrl = buildGoogleMapsPlaceUrl(placeId, placeName);
 
   return (
     <div
@@ -95,12 +99,29 @@ function PlacePhotoContent({
           onError={() => setFailed(true)}
         />
       ) : failed ? (
-        <div className="grid size-full place-items-center bg-[radial-gradient(circle_at_top_right,var(--color-accent),var(--color-secondary))] text-muted-foreground">
-          <span className="flex flex-col items-center gap-2 text-xs font-semibold">
-            <ImageOff className="size-6" />
-            Chưa có ảnh
+        <a
+          href={fallbackMapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group grid size-full place-items-center bg-[radial-gradient(circle_at_18%_20%,color-mix(in_oklab,var(--color-accent)_75%,white),transparent_34%),radial-gradient(circle_at_82%_75%,color-mix(in_oklab,var(--color-primary)_16%,transparent),transparent_42%),linear-gradient(145deg,var(--color-secondary),var(--color-background))] px-6 text-center text-foreground"
+          aria-label={`Google chưa cung cấp ảnh ${placeName}. Mở địa điểm trên Google Maps để xem ảnh`}
+        >
+          <span className="flex max-w-64 flex-col items-center gap-2.5">
+            <span className="grid size-11 place-items-center rounded-full border border-primary/15 bg-background/80 text-primary shadow-sm backdrop-blur">
+              <ImageOff className="size-5" />
+            </span>
+            <span className="line-clamp-2 text-base font-black leading-tight">
+              {placeName}
+            </span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Google Places chưa cung cấp ảnh cho app
+            </span>
+            <span className="mt-0.5 inline-flex items-center gap-1.5 rounded-full bg-background/90 px-3 py-2 text-xs font-bold text-primary shadow-sm transition-transform group-hover:-translate-y-0.5">
+              Xem ảnh thật trên Google Maps
+              <ExternalLink className="size-3.5" />
+            </span>
           </span>
-        </div>
+        </a>
       ) : (
         <div className="size-full animate-pulse bg-gradient-to-br from-secondary via-muted to-accent/60" />
       )}

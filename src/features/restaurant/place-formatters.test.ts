@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildGoogleMapsPlaceUrl,
   buildGoogleMapsUrl,
   formatDistance,
   formatPlaceType,
@@ -27,6 +28,14 @@ describe("restaurant place formatters", () => {
 
     expect(url.origin).toBe("https://www.google.com");
     expect(url.searchParams.get("query_place_id")).toBe("ChIJ-test");
+  });
+
+  it("builds a photo fallback link without needing full place details", () => {
+    const url = new URL(buildGoogleMapsPlaceUrl("ChIJ-photo", "Bánh Xèo Bà Dưỡng"));
+
+    expect(url.origin).toBe("https://www.google.com");
+    expect(url.searchParams.get("query")).toBe("Bánh Xèo Bà Dưỡng");
+    expect(url.searchParams.get("query_place_id")).toBe("ChIJ-photo");
   });
 
   it("blocks non-http external attribution links", () => {

@@ -72,16 +72,20 @@ export function getPlaceTags(place: PlaceSummary) {
     .map(formatPlaceType);
 }
 
-export function buildGoogleMapsUrl(place: PlaceSummary) {
+export function buildGoogleMapsPlaceUrl(placeId: string, query: string) {
   const url = new URL("https://www.google.com/maps/search/");
   url.searchParams.set("api", "1");
-  url.searchParams.set(
-    "query",
+  url.searchParams.set("query", query);
+  url.searchParams.set("query_place_id", placeId);
+  return url.toString();
+}
+
+export function buildGoogleMapsUrl(place: PlaceSummary) {
+  return buildGoogleMapsPlaceUrl(
+    place.id,
     place.formattedAddress ??
       `${place.location.latitude},${place.location.longitude}`,
   );
-  url.searchParams.set("query_place_id", place.id);
-  return url.toString();
 }
 
 export function safeExternalUrl(value?: string) {
