@@ -1,6 +1,7 @@
 import type {
   Coordinates,
   PlaceDetails,
+  PlacePhoto,
   PlacePhotoAsset,
   PlacePhotoRequest,
   PlacePriceLevel,
@@ -62,5 +63,6 @@ export interface PlaceProvider {
     placeId: string,
     options?: PlaceDetailsOptions,
   ): Promise<PlaceDetails>;
+  getPlacePhotoReferences(placeId: string, limit?: number): Promise<PlacePhoto[]>;
   getPlacePhotos(requests: PlacePhotoRequest[]): Promise<PlacePhotoAsset[]>;
 }

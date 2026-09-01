@@ -54,6 +54,38 @@ describe("GooglePlacesProvider", () => {
     });
   });
 
+  it("can resolve a photo reference with a photos-only detail request", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        photos: [
+          {
+            name: "places/ChIJ-test/photos/photo-1",
+            widthPx: 1200,
+            heightPx: 800,
+            authorAttributions: [{ displayName: "Người chụp" }],
+          },
+        ],
+      }),
+    );
+    const provider = new GooglePlacesProvider(
+      new GoogleApiKeyPlacesAuth("a-secure-test-key-that-is-long"),
+      fetchMock,
+    );
+
+    const photos = await provider.getPlacePhotoReferences("ChIJ-test", 1);
+
+    expect(photos[0]).toMatchObject({
+      resourceName: "places/ChIJ-test/photos/photo-1",
+      widthPx: 1200,
+      authorAttributions: [{ displayName: "Người chụp" }],
+    });
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+    expect(String(url)).toContain("/places/ChIJ-test");
+    expect((init?.headers as Record<string, string>)["X-Goog-FieldMask"]).toBe(
+      "photos",
+    );
+  });
+
   it("uses explicit masks, no-store, exact local filters, and Google order", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(

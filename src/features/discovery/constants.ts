@@ -101,20 +101,46 @@ export const PREFERENCE_OPTIONS = [
   support: "google" | "best_effort";
 }>;
 
-export const HO_CHI_MINH_AREAS = [
-  { id: "district-1", label: "Quận 1", coordinates: { latitude: 10.7756, longitude: 106.7004 } },
-  { id: "district-3", label: "Quận 3", coordinates: { latitude: 10.7844, longitude: 106.6844 } },
-  { id: "district-4", label: "Quận 4", coordinates: { latitude: 10.7578, longitude: 106.7013 } },
-  { id: "district-5", label: "Quận 5", coordinates: { latitude: 10.754, longitude: 106.6634 } },
-  { id: "district-7", label: "Quận 7", coordinates: { latitude: 10.734, longitude: 106.7216 } },
-  { id: "district-10", label: "Quận 10", coordinates: { latitude: 10.7746, longitude: 106.6677 } },
-  { id: "district-11", label: "Quận 11", coordinates: { latitude: 10.7659, longitude: 106.6478 } },
-  { id: "binh-thanh", label: "Bình Thạnh", coordinates: { latitude: 10.8117, longitude: 106.7091 } },
-  { id: "phu-nhuan", label: "Phú Nhuận", coordinates: { latitude: 10.7992, longitude: 106.6803 } },
-  { id: "tan-binh", label: "Tân Bình", coordinates: { latitude: 10.8015, longitude: 106.6526 } },
-  { id: "go-vap", label: "Gò Vấp", coordinates: { latitude: 10.8387, longitude: 106.6653 } },
-  { id: "thu-duc", label: "TP. Thủ Đức", coordinates: { latitude: 10.8494, longitude: 106.7537 } },
-] as const satisfies readonly UserLocation[];
+type ManualLocation = UserLocation & {
+  recommendedDistanceId: DistanceId;
+};
+
+export const MANUAL_LOCATIONS = [
+  {
+    id: "da-nang-center",
+    label: "Trung tâm Đà Nẵng",
+    coordinates: { latitude: 16.0678, longitude: 108.2208 },
+    recommendedDistanceId: "5km",
+  },
+  {
+    id: "ho-chi-minh-center",
+    label: "Trung tâm TP.HCM",
+    coordinates: { latitude: 10.7769, longitude: 106.7009 },
+    recommendedDistanceId: "5km",
+  },
+  {
+    id: "ha-noi-center",
+    label: "Trung tâm Hà Nội",
+    coordinates: { latitude: 21.0285, longitude: 105.8542 },
+    recommendedDistanceId: "5km",
+  },
+  { id: "district-1", label: "Quận 1", coordinates: { latitude: 10.7756, longitude: 106.7004 }, recommendedDistanceId: "3km" },
+  { id: "district-3", label: "Quận 3", coordinates: { latitude: 10.7844, longitude: 106.6844 }, recommendedDistanceId: "3km" },
+  { id: "district-4", label: "Quận 4", coordinates: { latitude: 10.7578, longitude: 106.7013 }, recommendedDistanceId: "3km" },
+  { id: "district-5", label: "Quận 5", coordinates: { latitude: 10.754, longitude: 106.6634 }, recommendedDistanceId: "3km" },
+  { id: "district-7", label: "Quận 7", coordinates: { latitude: 10.734, longitude: 106.7216 }, recommendedDistanceId: "3km" },
+  { id: "district-10", label: "Quận 10", coordinates: { latitude: 10.7746, longitude: 106.6677 }, recommendedDistanceId: "3km" },
+  { id: "district-11", label: "Quận 11", coordinates: { latitude: 10.7659, longitude: 106.6478 }, recommendedDistanceId: "3km" },
+  { id: "binh-thanh", label: "Bình Thạnh", coordinates: { latitude: 10.8117, longitude: 106.7091 }, recommendedDistanceId: "3km" },
+  { id: "phu-nhuan", label: "Phú Nhuận", coordinates: { latitude: 10.7992, longitude: 106.6803 }, recommendedDistanceId: "3km" },
+  { id: "tan-binh", label: "Tân Bình", coordinates: { latitude: 10.8015, longitude: 106.6526 }, recommendedDistanceId: "3km" },
+  { id: "go-vap", label: "Gò Vấp", coordinates: { latitude: 10.8387, longitude: 106.6653 }, recommendedDistanceId: "3km" },
+  { id: "thu-duc", label: "TP. Thủ Đức", coordinates: { latitude: 10.8494, longitude: 106.7537 }, recommendedDistanceId: "5km" },
+] as const satisfies readonly ManualLocation[];
+
+export function getManualLocation(id: string) {
+  return MANUAL_LOCATIONS.find((location) => location.id === id);
+}
 
 export function findOptionLabel<T extends string>(
   options: ReadonlyArray<{ id: T; label: string }>,

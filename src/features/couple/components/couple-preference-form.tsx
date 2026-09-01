@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   CUISINE_OPTIONS,
-  HO_CHI_MINH_AREAS,
+  MANUAL_LOCATIONS,
   MOOD_OPTIONS,
   PREFERENCE_OPTIONS,
   RATING_OPTIONS,
@@ -78,7 +78,7 @@ export function CouplePreferenceForm({
     initial ? initial.budgetMaxPerPerson : 400_000,
   );
   const [radius, setRadius] = useState<CouplePreference["radiusMeters"]>(
-    initial ? initial.radiusMeters : 3_000,
+    initial ? initial.radiusMeters : 5_000,
   );
   const [minRating, setMinRating] = useState<CouplePreference["minRating"]>(
     initial?.minRating ?? 4,
@@ -93,7 +93,7 @@ export function CouplePreferenceForm({
     initial?.options ?? [],
   );
   const [locationId, setLocationId] = useState(
-    initial?.location.id ?? HO_CHI_MINH_AREAS[0]!.id,
+    initial?.location.id ?? MANUAL_LOCATIONS[0]!.id,
   );
   const [formError, setFormError] = useState<string>();
 
@@ -132,7 +132,7 @@ export function CouplePreferenceForm({
       setFormError("Hãy chọn ít nhất một loại món.");
       return;
     }
-    const location = HO_CHI_MINH_AREAS.find((area) => area.id === locationId);
+    const location = MANUAL_LOCATIONS.find((area) => area.id === locationId);
     if (!location) {
       setFormError("Khu vực chưa hợp lệ.");
       return;
@@ -145,7 +145,12 @@ export function CouplePreferenceForm({
       minReviewCount,
       moods,
       options,
-      location: { ...location, source: "manual" },
+      location: {
+        id: location.id,
+        label: location.label,
+        coordinates: location.coordinates,
+        source: "manual",
+      },
     });
   };
 
@@ -198,10 +203,21 @@ export function CouplePreferenceForm({
           <span className="sr-only">Chọn khu vực</span>
           <select
             value={locationId}
-            onChange={(event) => setLocationId(event.target.value)}
+            onChange={(event) => {
+              const nextLocationId = event.target.value;
+              const nextLocation = MANUAL_LOCATIONS.find(
+                (area) => area.id === nextLocationId,
+              );
+              setLocationId(nextLocationId);
+              if (nextLocation) {
+                setRadius(
+                  nextLocation.recommendedDistanceId === "3km" ? 3_000 : 5_000,
+                );
+              }
+            }}
             className="min-h-12 w-full rounded-2xl border border-input bg-background px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/30"
           >
-            {HO_CHI_MINH_AREAS.map((area) => (
+            {MANUAL_LOCATIONS.map((area) => (
               <option key={area.id} value={area.id}>{area.label}</option>
             ))}
           </select>

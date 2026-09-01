@@ -85,10 +85,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const [asset] = await getPlaceProvider().getPlacePhotos([
+    const provider = getPlaceProvider();
+    const resolvedPhoto =
+      "resourceName" in parsed.data
+        ? undefined
+        : (await provider.getPlacePhotoReferences(parsed.data.placeId, 1))[0];
+    const resourceName =
+      "resourceName" in parsed.data
+        ? parsed.data.resourceName
+        : resolvedPhoto?.resourceName;
+
+    if (!resourceName) {
+      return apiError("PHOTO_NOT_FOUND", "Quán này chưa có ảnh từ Google.", {
+        status: 404,
+        requestId,
+        rateLimit,
+      });
+    }
+
+    const [asset] = await provider.getPlacePhotos([
       {
-        resourceName: parsed.data.resourceName,
+        resourceName,
         maxWidthPx: parsed.data.maxWidthPx,
+        authorAttributions: resolvedPhoto?.authorAttributions,
       },
     ]);
     if (!asset) {
@@ -105,7 +124,13 @@ export async function POST(request: NextRequest) {
     }
 
     return apiJson(
-      { data: { photoUri: photoUrl.toString() }, requestId },
+      {
+        data: {
+          photoUri: photoUrl.toString(),
+          ...(resolvedPhoto ? { photo: resolvedPhoto } : {}),
+        },
+        requestId,
+      },
       { status: 200, requestId, rateLimit },
     );
   } catch (error) {

@@ -5,12 +5,14 @@ import {
   buildSearchFieldMask,
 } from "@/services/places/google/field-masks";
 import {
+  googlePhotoReferencesResponseSchema,
   googlePhotoMediaResponseSchema,
   googlePlaceSchema,
   googleSearchResponseSchema,
 } from "@/services/places/google/google-places.schemas";
 import {
   mapGooglePlaceDetails,
+  mapGooglePhotos,
   mapGooglePlaceSummary,
 } from "@/services/places/google/google-places.mapper";
 import {
@@ -76,6 +78,7 @@ const detailsOptionsSchema = z.object({
 });
 
 const placeIdSchema = z.string().min(1).max(512);
+const photoReferenceLimitSchema = z.number().int().min(1).max(10).default(1);
 const photoRequestSchema = z
   .object({
     resourceName: z
@@ -208,6 +211,18 @@ export class GooglePlacesProvider implements PlaceProvider {
     );
 
     return mapGooglePlaceDetails(googlePlaceSchema.parse(json));
+  }
+
+  async getPlacePhotoReferences(placeId: string, limit = 1) {
+    const validPlaceId = placeIdSchema.parse(placeId);
+    const validLimit = photoReferenceLimitSchema.parse(limit);
+    const json = await this.requestJson(
+      `${API_BASE_URL}/places/${encodeURIComponent(validPlaceId)}`,
+      { method: "GET" },
+      "photos",
+    );
+    const response = googlePhotoReferencesResponseSchema.parse(json);
+    return mapGooglePhotos(response.photos).slice(0, validLimit);
   }
 
   async getPlacePhotos(input: PlacePhotoRequest[]): Promise<PlacePhotoAsset[]> {

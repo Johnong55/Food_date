@@ -9,21 +9,30 @@ import { cn } from "@/lib/utils";
 import type { PlacePhoto as PlacePhotoData } from "@/types/place";
 
 type PlacePhotoProps = {
+  placeId: string;
   photo?: PlacePhotoData;
   placeName: string;
   className?: string;
 };
 
-export function PlacePhoto({ photo, placeName, className }: PlacePhotoProps) {
+function PlacePhotoContent({
+  placeId,
+  photo,
+  placeName,
+  className,
+}: PlacePhotoProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const requestedRef = useRef(false);
   const [shouldLoad, setShouldLoad] = useState(false);
-  const [photoUri, setPhotoUri] = useState<string>();
+  const [photoAsset, setPhotoAsset] = useState<{
+    photoUri: string;
+    photo?: PlacePhotoData;
+  }>();
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const element = containerRef.current;
-    if (!element || !photo || requestedRef.current) return;
+    if (!element || requestedRef.current) return;
 
     if (typeof IntersectionObserver === "undefined") {
       requestedRef.current = true;
@@ -42,27 +51,31 @@ export function PlacePhoto({ photo, placeName, className }: PlacePhotoProps) {
     );
     observer.observe(element);
     return () => observer.disconnect();
-  }, [photo]);
+  }, [photo, placeId]);
 
   useEffect(() => {
-    if (!shouldLoad || !photo) return;
+    if (!shouldLoad) return;
     const controller = new AbortController();
 
     void getPlacePhoto(
-      { resourceName: photo.resourceName, maxWidthPx: 800 },
+      photo
+        ? { resourceName: photo.resourceName, maxWidthPx: 800 }
+        : { placeId, maxWidthPx: 800 },
       controller.signal,
     )
-      .then(setPhotoUri)
+      .then(setPhotoAsset)
       .catch((error: unknown) => {
         if (error instanceof Error && error.name === "AbortError") return;
         setFailed(true);
       });
 
     return () => controller.abort();
-  }, [photo, shouldLoad]);
+  }, [photo, placeId, shouldLoad]);
 
-  const sourceUrl = safeExternalUrl(photo?.googleMapsUri);
-  const authors = photo?.authorAttributions ?? [];
+  const resolvedPhoto = photo ?? photoAsset?.photo;
+  const photoUri = photoAsset?.photoUri;
+  const sourceUrl = safeExternalUrl(resolvedPhoto?.googleMapsUri);
+  const authors = resolvedPhoto?.authorAttributions ?? [];
 
   return (
     <div
@@ -81,7 +94,7 @@ export function PlacePhoto({ photo, placeName, className }: PlacePhotoProps) {
           referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
         />
-      ) : failed || !photo ? (
+      ) : failed ? (
         <div className="grid size-full place-items-center bg-[radial-gradient(circle_at_top_right,var(--color-accent),var(--color-secondary))] text-muted-foreground">
           <span className="flex flex-col items-center gap-2 text-xs font-semibold">
             <ImageOff className="size-6" />
@@ -136,5 +149,14 @@ export function PlacePhoto({ photo, placeName, className }: PlacePhotoProps) {
         </div>
       )}
     </div>
+  );
+}
+
+export function PlacePhoto(props: PlacePhotoProps) {
+  return (
+    <PlacePhotoContent
+      key={props.photo?.resourceName ?? props.placeId}
+      {...props}
+    />
   );
 }

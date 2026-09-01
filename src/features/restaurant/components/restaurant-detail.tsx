@@ -137,6 +137,7 @@ function DetailContent({ place }: { place: PlaceDetails }) {
     <main className="pb-48">
       <div className="relative">
         <PlacePhoto
+          placeId={place.id}
           photo={place.photos[0]}
           placeName={place.displayName.text}
           className="rounded-b-[2rem]"

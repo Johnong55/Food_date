@@ -10,7 +10,7 @@ import {
   type CouplePreferenceRequest,
 } from "@/features/couple/couple-contract";
 import { intersectCouplePreferences } from "@/features/couple/couple-intersection";
-import { HO_CHI_MINH_AREAS } from "@/features/discovery/constants";
+import { MANUAL_LOCATIONS } from "@/features/discovery/constants";
 import { getSiteUrl, hasSupabaseEnv } from "@/lib/env/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -388,7 +388,7 @@ export async function setCouplePreferences(
   preference: CouplePreferenceRequest,
 ) {
   const { session, memberId } = await authorizeCoupleMember(code, request);
-  const approvedArea = HO_CHI_MINH_AREAS.find(
+  const approvedArea = MANUAL_LOCATIONS.find(
     (area) => area.id === preference.location.id,
   );
   if (!approvedArea) {
@@ -400,7 +400,12 @@ export async function setCouplePreferences(
   }
   const stored: StoredCouplePreference = {
     ...preference,
-    location: { ...approvedArea, source: "manual" },
+    location: {
+      id: approvedArea.id,
+      label: approvedArea.label,
+      coordinates: approvedArea.coordinates,
+      source: "manual",
+    },
     version: 1,
     submittedAt: new Date().toISOString(),
   };

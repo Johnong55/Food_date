@@ -41,6 +41,8 @@ describe("restaurant search service", () => {
       id: "google_places",
       searchPlaces,
       getPlaceDetails: vi.fn<PlaceProvider["getPlaceDetails"]>(),
+      getPlacePhotoReferences:
+        vi.fn<PlaceProvider["getPlacePhotoReferences"]>(),
       getPlacePhotos: vi.fn<PlaceProvider["getPlacePhotos"]>(),
     };
 

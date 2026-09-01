@@ -103,6 +103,7 @@ export function CoupleSwipeCard({
         </div>
 
         <PlacePhoto
+          placeId={place.id}
           photo={place.photos[0]}
           placeName={place.displayName.text}
           className="aspect-[5/4]"

@@ -11,7 +11,7 @@ const authorAttributionSchema = z.object({
   photoUri: z.string().optional(),
 });
 
-const photoSchema = z.object({
+export const googlePhotoSchema = z.object({
   name: z.string(),
   widthPx: z.number().optional(),
   heightPx: z.number().optional(),
@@ -83,7 +83,7 @@ export const googlePlaceSchema = z.object({
   currentOpeningHours: openingHoursSchema.optional(),
   websiteUri: z.string().optional(),
   googleMapsUri: z.string().optional(),
-  photos: z.array(photoSchema).optional(),
+  photos: z.array(googlePhotoSchema).optional(),
   reviews: z.array(reviewSchema).optional(),
   dineIn: z.boolean().optional(),
   takeout: z.boolean().optional(),
@@ -106,6 +106,10 @@ export const googlePlaceSchema = z.object({
 export const googleSearchResponseSchema = z.object({
   places: z.array(googlePlaceSchema).optional(),
   nextPageToken: z.string().optional(),
+});
+
+export const googlePhotoReferencesResponseSchema = z.object({
+  photos: z.array(googlePhotoSchema).optional(),
 });
 
 export const googlePhotoMediaResponseSchema = z.object({

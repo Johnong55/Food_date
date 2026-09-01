@@ -17,7 +17,7 @@ export function createInitialPreferences(randomCuisine = false): FoodPreferenceS
     cuisines: randomCuisine ? ["random"] : [],
     moods: [],
     budgetId: null,
-    distanceId: "3km",
+    distanceId: "5km",
     minRating: 4,
     minReviewCount: 50,
     options: ["open_now"],

@@ -27,6 +27,7 @@ export function CoupleMatchCelebration({
         aria-labelledby="couple-match-title"
       >
         <PlacePhoto
+          placeId={place.id}
           photo={place.photos[0]}
           placeName={place.displayName.text}
           className="aspect-[16/9]"

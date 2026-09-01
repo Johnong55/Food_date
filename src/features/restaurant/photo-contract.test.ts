@@ -12,6 +12,15 @@ describe("place photo request contract", () => {
     ).toBe(true);
   });
 
+  it("accepts a Place ID so the server can lazily resolve a photo", () => {
+    expect(
+      placePhotoRequestSchema.safeParse({
+        placeId: "ChIJ-test",
+        maxWidthPx: 800,
+      }).success,
+    ).toBe(true);
+  });
+
   it("rejects arbitrary paths and unbounded dimensions", () => {
     expect(
       placePhotoRequestSchema.safeParse({

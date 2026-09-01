@@ -34,6 +34,7 @@ describe("preferenceReducer", () => {
 
   it("requires the essential selection for each wizard step", () => {
     const initial = createInitialPreferences();
+    expect(initial.distanceId).toBe("5km");
     expect(canContinueFromStep(0, initial)).toBe(false);
 
     const withCuisine = preferenceReducer(initial, {

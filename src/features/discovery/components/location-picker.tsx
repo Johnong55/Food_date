@@ -4,14 +4,21 @@ import { Check, LocateFixed, LoaderCircle, MapPin, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { HO_CHI_MINH_AREAS } from "@/features/discovery/constants";
+import {
+  DISTANCE_OPTIONS,
+  MANUAL_LOCATIONS,
+} from "@/features/discovery/constants";
 import { useCurrentLocation } from "@/features/discovery/hooks/use-current-location";
-import type { SelectedLocation } from "@/features/discovery/types";
+import type {
+  DistanceId,
+  SelectedLocation,
+} from "@/features/discovery/types";
 import { cn } from "@/lib/utils";
 
 type LocationPickerProps = {
   selected: SelectedLocation | null;
   onSelect: (location: SelectedLocation) => void;
+  onDistanceRecommendation: (distanceId: DistanceId) => void;
 };
 
 function normalizeSearch(value: string) {
@@ -22,14 +29,18 @@ function normalizeSearch(value: string) {
     .trim();
 }
 
-export function LocationPicker({ selected, onSelect }: LocationPickerProps) {
+export function LocationPicker({
+  selected,
+  onSelect,
+  onDistanceRecommendation,
+}: LocationPickerProps) {
   const [query, setQuery] = useState("");
   const { requestLocation, isLocating, error } = useCurrentLocation(onSelect);
 
   const filteredAreas = useMemo(() => {
     const normalizedQuery = normalizeSearch(query);
-    if (!normalizedQuery) return HO_CHI_MINH_AREAS;
-    return HO_CHI_MINH_AREAS.filter((area) =>
+    if (!normalizedQuery) return MANUAL_LOCATIONS;
+    return MANUAL_LOCATIONS.filter((area) =>
       normalizeSearch(area.label).includes(normalizedQuery),
     );
   }, [query]);
@@ -93,7 +104,15 @@ export function LocationPicker({ selected, onSelect }: LocationPickerProps) {
               key={area.id}
               type="button"
               aria-pressed={isSelected}
-              onClick={() => onSelect({ ...area, source: "manual" })}
+              onClick={() => {
+                onSelect({
+                  id: area.id,
+                  label: area.label,
+                  coordinates: area.coordinates,
+                  source: "manual",
+                });
+                onDistanceRecommendation(area.recommendedDistanceId);
+              }}
               className={cn(
                 "flex min-h-12 items-center gap-2 rounded-2xl border px-3 text-left text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/40",
                 isSelected
@@ -102,7 +121,14 @@ export function LocationPicker({ selected, onSelect }: LocationPickerProps) {
               )}
             >
               <MapPin className="size-4 shrink-0" aria-hidden="true" />
-              {area.label}
+              <span className="min-w-0">
+                <span className="block truncate">{area.label}</span>
+                <span className="block text-[10px] font-medium text-muted-foreground">
+                  Gợi ý {DISTANCE_OPTIONS.find(
+                    (distance) => distance.id === area.recommendedDistanceId,
+                  )?.label.replace("< ", "")}
+                </span>
+              </span>
             </button>
           );
         })}

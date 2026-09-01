@@ -44,5 +44,5 @@ export async function getPlacePhoto(
     );
   }
 
-  return body.data.photoUri;
+  return body.data;
 }

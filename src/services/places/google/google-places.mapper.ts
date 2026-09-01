@@ -2,8 +2,21 @@ import type { GooglePlace } from "@/services/places/google/google-places.schemas
 import type {
   PlaceDetails,
   PlaceOpeningHours,
+  PlacePhoto,
   PlaceSummary,
 } from "@/types/place";
+
+export function mapGooglePhotos(
+  photos: GooglePlace["photos"],
+): PlacePhoto[] {
+  return (photos ?? []).map((photo) => ({
+    resourceName: photo.name,
+    widthPx: photo.widthPx,
+    heightPx: photo.heightPx,
+    googleMapsUri: photo.googleMapsUri,
+    authorAttributions: photo.authorAttributions ?? [],
+  }));
+}
 
 function mapOpeningHours(
   hours: GooglePlace["currentOpeningHours"],
@@ -29,13 +42,7 @@ function mapCommonPlace(place: GooglePlace, position: number): PlaceSummary {
     rating: place.rating,
     userRatingCount: place.userRatingCount,
     priceLevel: place.priceLevel,
-    photos: (place.photos ?? []).map((photo) => ({
-      resourceName: photo.name,
-      widthPx: photo.widthPx,
-      heightPx: photo.heightPx,
-      googleMapsUri: photo.googleMapsUri,
-      authorAttributions: photo.authorAttributions ?? [],
-    })),
+    photos: mapGooglePhotos(place.photos),
     currentOpeningHours: mapOpeningHours(place.currentOpeningHours),
     servesVegetarianFood: place.servesVegetarianFood,
     googleResultPosition: position,

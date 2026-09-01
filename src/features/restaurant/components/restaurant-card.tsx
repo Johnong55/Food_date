@@ -48,7 +48,11 @@ export function RestaurantCard({ place, selected, onSelect }: RestaurantCardProp
           selected && "border-primary shadow-[0_18px_45px_-25px_rgba(205,73,51,0.75)]",
         )}
       >
-        <PlacePhoto photo={place.photos[0]} placeName={place.displayName.text} />
+        <PlacePhoto
+          placeId={place.id}
+          photo={place.photos[0]}
+          placeName={place.displayName.text}
+        />
 
         <CardContent className="space-y-4 p-4">
           <div className="flex items-start justify-between gap-3">

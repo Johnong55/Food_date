@@ -33,6 +33,7 @@ export function SavedPlaceItem({
       <Card className="overflow-hidden">
         {place ? (
           <PlacePhoto
+            placeId={place.id}
             photo={place.photos[0]}
             placeName={place.displayName.text}
             className="aspect-[16/8]"
